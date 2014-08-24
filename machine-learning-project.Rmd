@@ -1,0 +1,88 @@
+---
+title: "Predicting Exercise Form"
+output: html_document
+---
+
+# Executive Summary
+
+In order to create a prediction algorithm for the exercise sensor data, I examined the training data, eliminated variables with near-zero variance, and removed variables that had the potential to confuse the model but were not determinative of the outcome (index and subject name data).  I then used the random forest method to create the prediction algorithm.
+
+The random forest method resulted in a prediction algorithm with an out of sample error rate of .05%, and an accuracy rating of .9988.  The model also correctly classified the 20 items in the testing set.
+
+# Preprocessing
+
+As always, the first step is to load the data.
+
+```{r, echo=FALSE}
+require(caret)
+```
+
+```{r}
+wleTrain <- read.csv("pml-training.csv")
+```
+
+Next, we'll need to eliminate variables that we won't need in our analysis.  
+
+This code chunk creates a vector of the variables with zero or near-zero variance.  It then removes those variables (except for the new_window variable) from the dataset.
+
+```{r}
+nzv <- nearZeroVar(wleTrain, saveMetrics=TRUE)
+nzv2 <- nzv[nzv$nzv == "TRUE",]
+nzv3 <- nzv2[-1,]
+rows <- rownames(nzv3)
+wleTrain2 <- wleTrain[,!(names(wleTrain) %in% rows)]
+```
+
+This next code chunk subsets the data to get a new dataset with only the rows where the new_column variable is "no", then removes any column with NAs.
+
+```{r}
+wleTrain3 <- wleTrain2[wleTrain2$new_window == 'no',]
+table(wleTrain3$new_window)
+wleTrain4 <- wleTrain3[,!sapply(wleTrain3,function(x) any(is.na(x)))]
+```
+
+Then I removed the index and subject names from the data sets to avoid confusing the model.
+
+```{r}
+wleTrain4 <- wleTrain4[,c(-1,-2)]
+```
+
+The next step is to create training and testing subsets to examine the accuracy of the model once it's built.
+
+```{r}
+inTrain <- createDataPartition(y=wleTrain4$classe,p=.75,list=FALSE)
+training <- wleTrain4[inTrain,]
+testing <- wleTrain4[-inTrain,]
+```
+
+Finally, we'll clean up the environment a little to save some memory.
+
+```{r}
+rm(inTrain, rows, nzv, nzv2, nzv3, wleTrain, wleTrain2, wleTrain3, wleTrain4)
+```
+
+# Fitting the model
+
+Since this is a classification issue, a regression tree or random forest model is best-suited for the task.  In order to increase accuracy, I decided on a random forest model with 10-fold k-fold cross validation. 
+
+```{r}
+set.seed(12345)
+cvCtrl <- trainControl(method = "repeatedcv", repeats = 3)
+wleMod2 <- train(classe ~., data=training, method="rf", trControl = cvCtrl)
+wleMod2$finalModel
+```
+
+## Out of sample error
+
+As shown in the model summary above, the unbiased out of sample error rate (OOB estimate) is 0.05%.
+
+# Cross-validation
+
+To further cross-validate, I'll use the testing dataset to predict values according to the model then compare with the actual values.  This will provide an accuracy rate for the model.
+
+```{r}
+wlePredict <- predict(wleMod2,newdata=testing)
+confusionMatrix(wlePredict,testing$classe)
+```
+
+There were only six misclassifications, and the accuracy rating is 0.9988 for the model.  Thus, it appears that the random forest method produced a fairly accurate model for predicting the category of exercise.
