@@ -55,13 +55,13 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
-<div id="executive-summary" class="section level1">
-<h1>Executive Summary</h1>
+<div id="executive-summary" class="section level2">
+<h2>Executive Summary</h2>
 <p>In order to create a prediction algorithm for the exercise sensor data, I examined the training data, eliminated variables with near-zero variance, and removed variables that had the potential to confuse the model but were not determinative of the outcome (index and subject name data). I then used the random forest method to create the prediction algorithm.</p>
 <p>The random forest method resulted in a prediction algorithm with an out of sample error rate of .05%, and an accuracy rating of .9988. The model also correctly classified the 20 items in the testing set.</p>
 </div>
-<div id="preprocessing" class="section level1">
-<h1>Preprocessing</h1>
+<div id="preprocessing" class="section level2">
+<h2>Preprocessing</h2>
 <p>As always, the first step is to load the data.</p>
 <pre><code>## Loading required package: caret
 ## Loading required package: lattice
@@ -90,8 +90,8 @@ testing &lt;- wleTrain4[-inTrain,]</code></pre>
 <p>Finally, we’ll clean up the environment a little to save some memory.</p>
 <pre class="r"><code>rm(inTrain, rows, nzv, nzv2, nzv3, wleTrain, wleTrain2, wleTrain3, wleTrain4)</code></pre>
 </div>
-<div id="fitting-the-model" class="section level1">
-<h1>Fitting the model</h1>
+<div id="fitting-the-model" class="section level2">
+<h2>Fitting the model</h2>
 <p>Since this is a classification issue, a regression tree or random forest model is best-suited for the task. In order to increase accuracy, I decided on a random forest model with 10-fold k-fold cross validation.</p>
 <pre class="r"><code>set.seed(12345)
 cvCtrl &lt;- trainControl(method = &quot;repeatedcv&quot;, repeats = 3)
@@ -108,21 +108,21 @@ wleMod2 &lt;- train(classe ~., data=training, method=&quot;rf&quot;, trControl =
 ##                      Number of trees: 500
 ## No. of variables tried at each split: 38
 ## 
-##         OOB estimate of  error rate: 0.05%
+##         OOB estimate of  error rate: 0.07%
 ## Confusion matrix:
 ##      A    B    C    D    E class.error
 ## A 4104    0    0    0    0   0.0000000
-## B    2 2786    1    0    0   0.0010757
-## C    0    2 2512    0    0   0.0007955
-## D    0    0    2 2359    0   0.0008471
-## E    0    0    0    0 2646   0.0000000</code></pre>
-<div id="out-of-sample-error" class="section level2">
-<h2>Out of sample error</h2>
+## B    1 2788    0    0    0   0.0003586
+## C    0    3 2510    1    0   0.0015911
+## D    0    0    2 2358    1   0.0012706
+## E    0    0    0    2 2644   0.0007559</code></pre>
+<div id="out-of-sample-error" class="section level3">
+<h3>Out of sample error</h3>
 <p>As shown in the model summary above, the unbiased out of sample error rate (OOB estimate) is 0.05%.</p>
 </div>
 </div>
-<div id="cross-validation" class="section level1">
-<h1>Cross-validation</h1>
+<div id="cross-validation" class="section level2">
+<h2>Cross-validation</h2>
 <p>To further cross-validate, I’ll use the testing dataset to predict values according to the model then compare with the actual values. This will provide an accuracy rate for the model.</p>
 <pre class="r"><code>wlePredict &lt;- predict(wleMod2,newdata=testing)
 confusionMatrix(wlePredict,testing$classe)</code></pre>
@@ -131,14 +131,14 @@ confusionMatrix(wlePredict,testing$classe)</code></pre>
 ##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 1367    0    0    0    0
-##          B    0  929    1    0    0
-##          C    0    0  837    0    0
+##          B    0  927    2    0    0
+##          C    0    2  836    1    0
 ##          D    0    0    0  785    0
-##          E    0    0    0    1  882
+##          E    0    0    0    0  882
 ## 
 ## Overall Statistics
 ##                                     
-##                Accuracy : 1         
+##                Accuracy : 0.999     
 ##                  95% CI : (0.998, 1)
 ##     No Information Rate : 0.285     
 ##     P-Value [Acc &gt; NIR] : &lt;2e-16    
@@ -149,15 +149,16 @@ confusionMatrix(wlePredict,testing$classe)</code></pre>
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity             1.000    1.000    0.999    0.999    1.000
-## Specificity             1.000    1.000    1.000    1.000    1.000
-## Pos Pred Value          1.000    0.999    1.000    1.000    0.999
-## Neg Pred Value          1.000    1.000    1.000    1.000    1.000
+## Sensitivity             1.000    0.998    0.998    0.999    1.000
+## Specificity             1.000    0.999    0.999    1.000    1.000
+## Pos Pred Value          1.000    0.998    0.996    1.000    1.000
+## Neg Pred Value          1.000    0.999    0.999    1.000    1.000
 ## Prevalence              0.285    0.193    0.175    0.164    0.184
 ## Detection Rate          0.285    0.193    0.174    0.163    0.184
-## Detection Prevalence    0.285    0.194    0.174    0.163    0.184
-## Balanced Accuracy       1.000    1.000    0.999    0.999    1.000</code></pre>
-<p>There were only six misclassifications, and the accuracy rating is 0.9988 for the model. Thus, it appears that the random forest method produced a fairly accurate model for predicting the category of exercise.</p>
+## Detection Prevalence    0.285    0.193    0.175    0.163    0.184
+## Balanced Accuracy       1.000    0.999    0.998    0.999    1.000</code></pre>
+<p>There were only two misclassifications, and the accuracy rating for the model is nearly perfect. The model also correctly predicted the values of the twenty original test categories. Thus, it appears that the random forest method produced an accurate model for predicting the category of exercise.</p>
+<p>Once possible concern with this outcome lies in the fact that I performed preprocessing on the data before splitting it into training and test sets. With more time, I would like to split the data first then perform the preprocessing.</p>
 </div>
 
 

@@ -3,13 +3,13 @@ title: "Predicting Exercise Form"
 output: html_document
 ---
 
-# Executive Summary
+## Executive Summary
 
 In order to create a prediction algorithm for the exercise sensor data, I examined the training data, eliminated variables with near-zero variance, and removed variables that had the potential to confuse the model but were not determinative of the outcome (index and subject name data).  I then used the random forest method to create the prediction algorithm.
 
 The random forest method resulted in a prediction algorithm with an out of sample error rate of .05%, and an accuracy rating of .9988.  The model also correctly classified the 20 items in the testing set.
 
-# Preprocessing
+## Preprocessing
 
 As always, the first step is to load the data.
 
@@ -61,22 +61,22 @@ Finally, we'll clean up the environment a little to save some memory.
 rm(inTrain, rows, nzv, nzv2, nzv3, wleTrain, wleTrain2, wleTrain3, wleTrain4)
 ```
 
-# Fitting the model
+## Fitting the model
 
 Since this is a classification issue, a regression tree or random forest model is best-suited for the task.  In order to increase accuracy, I decided on a random forest model with 10-fold k-fold cross validation. 
 
-```{r}
+```{r, cache=TRUEvf}
 set.seed(12345)
 cvCtrl <- trainControl(method = "repeatedcv", repeats = 3)
 wleMod2 <- train(classe ~., data=training, method="rf", trControl = cvCtrl)
 wleMod2$finalModel
 ```
 
-## Out of sample error
+### Out of sample error
 
 As shown in the model summary above, the unbiased out of sample error rate (OOB estimate) is 0.05%.
 
-# Cross-validation
+## Cross-validation
 
 To further cross-validate, I'll use the testing dataset to predict values according to the model then compare with the actual values.  This will provide an accuracy rate for the model.
 
@@ -85,4 +85,6 @@ wlePredict <- predict(wleMod2,newdata=testing)
 confusionMatrix(wlePredict,testing$classe)
 ```
 
-There were only six misclassifications, and the accuracy rating is 0.9988 for the model.  Thus, it appears that the random forest method produced a fairly accurate model for predicting the category of exercise.
+There were only two misclassifications, and the accuracy rating for the model is nearly perfect.  The model also correctly predicted the values of the twenty original test categories.  Thus, it appears that the random forest method produced an accurate model for predicting the category of exercise.
+
+Once possible concern with this outcome lies in the fact that I performed preprocessing on the data before splitting it into training and test sets.  With more time, I would like to split the data first then perform the preprocessing.
