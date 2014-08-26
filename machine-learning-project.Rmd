@@ -65,7 +65,7 @@ rm(inTrain, rows, nzv, nzv2, nzv3, wleTrain, wleTrain2, wleTrain3, wleTrain4)
 
 Since this is a classification issue, a regression tree or random forest model is best-suited for the task.  In order to increase accuracy, I decided on a random forest model with 10-fold k-fold cross validation. 
 
-```{r, cache=TRUEvf}
+```{r, cache=TRUE}
 set.seed(12345)
 cvCtrl <- trainControl(method = "repeatedcv", repeats = 3)
 wleMod2 <- train(classe ~., data=training, method="rf", trControl = cvCtrl)
