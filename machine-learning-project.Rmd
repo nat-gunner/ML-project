@@ -81,10 +81,11 @@ As shown in the model summary above, the unbiased out of sample error rate (OOB 
 To further cross-validate, I'll use the testing dataset to predict values according to the model then compare with the actual values.  This will provide an accuracy rate for the model.
 
 ```{r}
+set.seed(12345)
 wlePredict <- predict(wleMod2,newdata=testing)
 confusionMatrix(wlePredict,testing$classe)
 ```
 
-There were only two misclassifications, and the accuracy rating for the model is nearly perfect.  The model also correctly predicted the values of the twenty original test categories.  Thus, it appears that the random forest method produced an accurate model for predicting the category of exercise.
+As you can see from the confusion matrix, there were very few misclassifications, and the accuracy rating for the model is nearly perfect.  The model also correctly predicted the values of the twenty original test categories.  Thus, it appears that the random forest method produced an accurate model for predicting the category of exercise.
 
 Once possible concern with this outcome lies in the fact that I performed preprocessing on the data before splitting it into training and test sets.  With more time, I would like to split the data first then perform the preprocessing.
